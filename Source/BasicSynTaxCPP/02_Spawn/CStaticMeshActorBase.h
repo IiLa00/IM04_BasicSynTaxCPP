@@ -19,8 +19,9 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	UStaticMeshComponent* MeshComp;
-	// todo 
+protected:
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+		UStaticMeshComponent* MeshComp;
+	
 
 };

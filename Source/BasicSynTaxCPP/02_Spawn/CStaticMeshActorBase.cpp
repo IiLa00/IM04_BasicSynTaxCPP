@@ -6,6 +6,9 @@ ACStaticMeshActorBase::ACStaticMeshActorBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshpComp");
+	RootComponent = MeshComp;
+
 }
 
 void ACStaticMeshActorBase::BeginPlay()
