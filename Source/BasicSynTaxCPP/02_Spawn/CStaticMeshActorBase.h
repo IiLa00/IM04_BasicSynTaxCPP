@@ -23,5 +23,11 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 		UStaticMeshComponent* MeshComp;
 	
+private:
+	UFUNCTION()
+		void ChangeColor();
+
+private:
+	UMaterialInstanceDynamic* DynamicMaterial;
 
 };
