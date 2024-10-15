@@ -31,6 +31,10 @@ private:
 	void OnSprint();
 	void OffSprint();
 
+public:
+	UFUNCTION(BlueprintCallable)
+		void SetBodyColor(FLinearColor InBodyColor, FLinearColor InLogoColor);
+
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 		USpringArmComponent* SpringArmComp;
@@ -39,5 +43,9 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 		UCameraComponent* CameraComp;
 
+private:
+	UMaterialInstanceDynamic* BodyMaterial;
+	UMaterialInstanceDynamic* LogoMaterial;
 
+	//todo. reset bodycolor 넣어야됨 강의보면서
 };

@@ -15,7 +15,8 @@ public:
 	virtual void BeginPlay() override;
 
 private:
-	void BeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
+	UFUNCTION()
+		void BeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
 public:
 	FBoxMulticast OnBoxMulticast;
