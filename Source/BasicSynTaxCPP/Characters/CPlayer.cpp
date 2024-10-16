@@ -48,8 +48,6 @@ void ACPlayer::BeginPlay()
 	
 	GetMesh()->SetMaterial(0, BodyMaterial);
 	GetMesh()->SetMaterial(1, LogoMaterial);
-
-
 }
 
 void ACPlayer::Tick(float DeltaTime)
@@ -105,3 +103,7 @@ void ACPlayer::SetBodyColor(FLinearColor InBodyColor, FLinearColor InLogoColor)
 	LogoMaterial->SetVectorParameterValue("BodyColor", InLogoColor);
 }
 
+void ACPlayer::ResetBodyColor()
+{
+	SetBodyColor(FLinearColor(0.45098f, 0.403922f, 0.360784f), FLinearColor(0.45098f, 0.403922f, 0.360784f));
+}

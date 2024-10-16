@@ -12,10 +12,9 @@ ACLineTrace::ACLineTrace()
 
 	TextRenderComp->SetRelativeLocation(FVector(0, 0, 20));
 	TextRenderComp->SetRelativeRotation(FRotator(0, 180, 0));
-	TextRenderComp->SetTextRenderColor(FColor::Red);
+	TextRenderComp->SetTextRenderColor(FColor::Blue);
 	TextRenderComp->SetHorizontalAlignment(EHTA_Center);
 	TextRenderComp->SetText(GetName());
-
 }
 
 void ACLineTrace::BeginPlay()
@@ -28,6 +27,8 @@ void ACLineTrace::BeginPlay()
 
 	Vertices[0] = Cast<ACVertex>(Actors[0]);
 	Vertices[1] = Cast<ACVertex>(Actors[1]);
+
+	OnLineTraceHit.AddDynamic(this, &ACLineTrace::LineTraceHit);
 }
 
 void ACLineTrace::Tick(float DeltaTime)
@@ -60,5 +61,11 @@ void ACLineTrace::Tick(float DeltaTime)
 	OnLineTraceHit.Broadcast(Hit.GetActor(), FLinearColor::Red);
 
 
+}
+
+void ACLineTrace::LineTraceHit(AActor* InActor, FLinearColor InColor)
+{
+	TextRenderComp->SetTextRenderColor(InColor.ToFColor(true));
+	TextRenderComp->SetText(InActor->GetName());
 }
 

@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -35,6 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SetBodyColor(FLinearColor InBodyColor, FLinearColor InLogoColor);
 
+	UFUNCTION(BlueprintCallable)
+		void ResetBodyColor();
+	
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 		USpringArmComponent* SpringArmComp;
@@ -46,6 +48,4 @@ private:
 private:
 	UMaterialInstanceDynamic* BodyMaterial;
 	UMaterialInstanceDynamic* LogoMaterial;
-
-	//todo. reset bodycolor 넣어야됨 강의보면서
 };
