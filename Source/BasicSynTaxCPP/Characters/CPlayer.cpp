@@ -16,11 +16,11 @@ ACPlayer::ACPlayer()
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetRelativeLocation(FVector(0, 0, 60));
+	SpringArmComp->SocketOffset = FVector(0, 60, 0);
 	SpringArmComp->TargetArmLength = 200.f;
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComp->SetupAttachment(SpringArmComp);
-
 
 	// Set Skeletal Mesh Asset
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT("/Game/Character/Mesh/SK_Mannequin"));
@@ -90,6 +90,9 @@ void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Rifle", EInputEvent::IE_Pressed, this, &ACPlayer::OnRifle);
 
+	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Pressed, this, &ACPlayer::OnAim);
+	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Released, this, &ACPlayer::OffAim);
+
 }
 
 void ACPlayer::OnMoveForward(float Axis)
@@ -120,8 +123,49 @@ void ACPlayer::OffSprint()
 
 void ACPlayer::OnRifle()
 {
+	if (AR4->IsEquipped())
+	{
+		if(AR4->IsAiming())
+			OffAim();
 
+		AR4->Unequip();
+		return;
+	}
 
+	AR4->Equip();
+
+}
+
+void ACPlayer::OnAim()
+{
+	if (!AR4->IsEquipped()) return;
+	if (AR4->IsPlayingMontage()) return;
+
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	SpringArmComp->TargetArmLength = 100.f;
+	SpringArmComp->SocketOffset = FVector(0, 30, 10);
+
+	AR4->EnableAim();
+
+	ZoomIn();
+}
+
+void ACPlayer::OffAim()
+{
+	if (!AR4->IsEquipped()) return;
+	if (AR4->IsPlayingMontage()) return;
+
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	SpringArmComp->TargetArmLength = 200.f;
+	SpringArmComp->SocketOffset = FVector(0, 60, 0);
+
+	AR4->DisableAim();
+
+	ZoomOut();
 }
 
 void ACPlayer::SetBodyColor(FLinearColor InBodyColor, FLinearColor InLogoColor)

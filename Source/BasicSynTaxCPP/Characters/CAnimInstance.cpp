@@ -1,4 +1,6 @@
 #include "CAnimInstance.h"
+#include "Weapons/CWeaponInterface.h"
+#include "Weapons/CAR4.h"
 
 void UCAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
@@ -6,4 +8,14 @@ void UCAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		return;
 
 	Speed = TryGetPawnOwner()->GetVelocity().Size2D();
+	Direction = CalculateDirection(TryGetPawnOwner()->GetVelocity(), TryGetPawnOwner()->GetControlRotation());
+
+	ICWeaponInterface* Owner = Cast<ICWeaponInterface>(TryGetPawnOwner());
+
+	if (Owner && Owner->GetWeapon())
+	{
+		bEquipped = Owner->GetWeapon()->IsEquipped();
+		bAiming = Owner->GetWeapon()->IsAiming();
+	}
+		
 }

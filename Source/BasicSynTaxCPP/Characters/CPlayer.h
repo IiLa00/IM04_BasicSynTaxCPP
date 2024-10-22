@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Weapons/CWeaponInterface.h"
 #include "CPlayer.generated.h"
 
 class USpringArmComponent;
@@ -9,7 +10,7 @@ class UCameraComponent;
 class ACAR4;
 
 UCLASS()
-class BASICSYNTAXCPP_API ACPlayer : public ACharacter
+class BASICSYNTAXCPP_API ACPlayer : public ACharacter, public ICWeaponInterface
 {
 	GENERATED_BODY()
 
@@ -24,6 +25,16 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	FORCEINLINE ACAR4* GetWeapon() override { return AR4; }
+
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+		void ZoomIn();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void ZoomOut();
+
 private:
 	void OnMoveForward(float Axis);
 	void OnMoveRight(float Axis);
@@ -33,6 +44,9 @@ private:
 
 	void OnRifle();
 
+	void OnAim();
+	void OffAim();
+
 public:
 	UFUNCTION(BlueprintCallable)
 		void SetBodyColor(FLinearColor InBodyColor, FLinearColor InLogoColor);
@@ -40,11 +54,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void ResetBodyColor();
 	
-private:
+protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 		USpringArmComponent* SpringArmComp;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "Components")
 		UCameraComponent* CameraComp;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
