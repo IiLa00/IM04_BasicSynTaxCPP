@@ -5,7 +5,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Weapons/CAR4.h"
-
+#include "Blueprint/UserWidget.h"
+#include "UI/CAimWidget.h"
 
 ACPlayer::ACPlayer()
 {
@@ -52,6 +53,8 @@ ACPlayer::ACPlayer()
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = 400.f;
+
+	CHelpers::GetClass(&AimWidgetClass, "/Game/UI/WB_Aim");
 }
 
 void ACPlayer::BeginPlay()
@@ -67,6 +70,10 @@ void ACPlayer::BeginPlay()
 	FActorSpawnParameters SpawnParam;
 	SpawnParam.Owner = this;
 	AR4 = GetWorld()->SpawnActor<ACAR4>(WeaponClass, SpawnParam);
+
+	AimWidget = CreateWidget<UCAimWidget>(GetController<APlayerController>(), AimWidgetClass);
+	AimWidget->AddToViewport();
+	AimWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ACPlayer::Tick(float DeltaTime)
@@ -150,6 +157,8 @@ void ACPlayer::OnAim()
 	AR4->EnableAim();
 
 	ZoomIn();
+
+	AimWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 }
 
 void ACPlayer::OffAim()
@@ -166,6 +175,8 @@ void ACPlayer::OffAim()
 	AR4->DisableAim();
 
 	ZoomOut();
+
+	AimWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ACPlayer::SetBodyColor(FLinearColor InBodyColor, FLinearColor InLogoColor)
@@ -177,4 +188,13 @@ void ACPlayer::SetBodyColor(FLinearColor InBodyColor, FLinearColor InLogoColor)
 void ACPlayer::ResetBodyColor()
 {
 	SetBodyColor(FLinearColor(0.45098f, 0.403922f, 0.360784f), FLinearColor(0.45098f, 0.403922f, 0.360784f));
+}
+
+void ACPlayer::GetAimRay(FVector& OutAimStart, FVector& OutAimEnd, FVector& OutAimDirection)
+{
+	OutAimDirection = CameraComp->GetForwardVector();
+	OutAimStart = CameraComp->GetComponentToWorld().GetLocation();
+	OutAimEnd = OutAimStart + OutAimDirection * AR4->GetShootRange();
+	
+	//FVector MuzzleSocketLocation = AR4->GetMesh()->GetSocketLocation("MuzzleFlash");
 }
