@@ -30,12 +30,18 @@ public:
 	FORCEINLINE ACAR4* GetWeapon() override { return AR4; }
 	FORCEINLINE void GetAimRay(FVector& OutAimStart, FVector& OutAimEnd, FVector& OutAimDirection) override;
 
+	void OnTarget() override;
+	void OffTarget() override;
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 		void ZoomIn();
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void ZoomOut();
+
+	UFUNCTION(Exec)
+		void AddLaunch(float Height = 1000.f);
 
 private:
 	void OnMoveForward(float Axis);
@@ -45,6 +51,9 @@ private:
 	void OffSprint();
 
 	void OnRifle();
+
+	void OnFire();
+	void OffFire();
 
 	void OnAim();
 	void OffAim();

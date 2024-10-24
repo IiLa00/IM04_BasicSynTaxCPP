@@ -38,6 +38,14 @@ public:
 	void Unequip();
 	void Begin_Unequip();
 	void End_Unequip();
+
+public:
+	void OnFire();
+	void OffFire();
+
+private:
+	UFUNCTION()
+		void Firing_Internal();
 	
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
@@ -68,5 +76,6 @@ private:
 	bool bEquipped;
 	bool bPlayingMontage;
 	bool bAiming;
+	bool bFiring;
 
 };

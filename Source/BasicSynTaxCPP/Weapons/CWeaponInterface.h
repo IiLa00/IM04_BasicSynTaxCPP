@@ -19,4 +19,7 @@ class BASICSYNTAXCPP_API ICWeaponInterface
 public:
 	virtual ACAR4* GetWeapon() = 0;
 	virtual void GetAimRay(FVector& OutAimStart, FVector& OutAimEnd, FVector& OutAimDirection) = 0;
+
+	virtual void OnTarget() {};
+	virtual void OffTarget() {};
 };

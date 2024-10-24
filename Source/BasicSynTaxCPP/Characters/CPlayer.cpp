@@ -97,9 +97,18 @@ void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Rifle", EInputEvent::IE_Pressed, this, &ACPlayer::OnRifle);
 
+	PlayerInputComponent->BindAction("Action", EInputEvent::IE_Pressed, this, &ACPlayer::OnFire);
+	PlayerInputComponent->BindAction("Action", EInputEvent::IE_Released, this, &ACPlayer::OffFire);
+
 	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Pressed, this, &ACPlayer::OnAim);
 	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Released, this, &ACPlayer::OffAim);
 
+}
+
+void ACPlayer::AddLaunch(float Height)
+{
+	FVector Current = GetActorLocation();
+	TeleportTo(Current + FVector(0, 0, Height), GetActorRotation());
 }
 
 void ACPlayer::OnMoveForward(float Axis)
@@ -141,6 +150,16 @@ void ACPlayer::OnRifle()
 
 	AR4->Equip();
 
+}
+
+void ACPlayer::OnFire()
+{
+	AR4->OnFire();
+}
+
+void ACPlayer::OffFire()
+{
+	AR4->OffFire();
 }
 
 void ACPlayer::OnAim()
@@ -193,8 +212,28 @@ void ACPlayer::ResetBodyColor()
 void ACPlayer::GetAimRay(FVector& OutAimStart, FVector& OutAimEnd, FVector& OutAimDirection)
 {
 	OutAimDirection = CameraComp->GetForwardVector();
-	OutAimStart = CameraComp->GetComponentToWorld().GetLocation();
-	OutAimEnd = OutAimStart + OutAimDirection * AR4->GetShootRange();
+
+	FVector CamLoc = CameraComp->GetComponentToWorld().GetLocation();
+	FVector MuzzleLoc = AR4->GetMesh()->GetSocketLocation("MuzzleFlash");
 	
-	//FVector MuzzleSocketLocation = AR4->GetMesh()->GetSocketLocation("MuzzleFlash");
+	float Projected = (MuzzleLoc - CamLoc) | OutAimDirection;
+
+	OutAimStart = CamLoc + OutAimDirection * Projected;
+
+	FVector RandomConeDegree = UKismetMathLibrary::RandomUnitVectorInConeInDegrees(OutAimDirection, 0.2f);
+
+	RandomConeDegree *= AR4->GetShootRange();
+
+	OutAimEnd = OutAimStart + RandomConeDegree;
+	
+}
+
+void ACPlayer::OnTarget()
+{
+	AimWidget->OnTarget();
+}
+
+void ACPlayer::OffTarget()
+{
+	AimWidget->OffTarget();
 }
