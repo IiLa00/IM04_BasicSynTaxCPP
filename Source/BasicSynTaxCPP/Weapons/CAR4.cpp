@@ -177,15 +177,14 @@ void ACAR4::Firing_Internal()
 		QueryParams
 	))
 	{
-		UPrimitiveComponent* HitComp = Hit.GetComponent();
+		CLog::Log("HHHH");
+		CLog::Log("HHHH");
+		CLog::Log("HHHH");
+		CLog::Log("HHHH");
+		CLog::Log("HHHH");
+		CLog::Log("HHHH");
+		CLog::Log("HHHH");
 
-		if (Hit.GetComponent()->IsSimulatingPhysics())
-		{
-			Direction = Hit.GetActor()->GetActorLocation() - OwnerCharacter->GetActorLocation();
-			Direction.Normalize();
-
-			HitComp->AddImpulseAtLocation(Direction * 3000.f, OwnerCharacter->GetActorLocation());
-		}
 	}
 }
 
