@@ -26,6 +26,8 @@ ACAR4::ACAR4()
 	MontagesPlayRate = 1.75f;
 
 	ShootRange = 10000.f;
+
+	CHelpers::GetClass(&ShakeClass, "/Game/AR4/Shake_Fire");
 }
 
 void ACAR4::BeginPlay()
@@ -156,6 +158,14 @@ void ACAR4::OffFire()
 
 void ACAR4::Firing_Internal()
 {
+	if (!OwnerCharacter) return;
+	APlayerController* PC = OwnerCharacter->GetController<APlayerController>();
+
+	if (PC)
+		PC->PlayerCameraManager->PlayCameraShake(ShakeClass);
+	
+
+
 	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
 	if (!OwnerInterface) return;
 
@@ -177,6 +187,7 @@ void ACAR4::Firing_Internal()
 		QueryParams
 	))
 	{
+		UPrimitiveComponent* HitComp = Hit.GetComponent();
 		if (Hit.GetComponent()->IsSimulatingPhysics())
 		{
 			Direction = Hit.GetActor()->GetActorLocation() - OwnerCharacter->GetActorLocation();

@@ -47,7 +47,7 @@ private:
 	UFUNCTION()
 		void Firing_Internal();
 	
-private:
+protected:
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "Components")
 		USkeletalMeshComponent* MeshComp;
 
@@ -69,6 +69,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Range")
 		float ShootRange;
+
+	UPROPERTY(EditDefaultsOnly, Category = "CameraShake")
+		TSubclassOf<UCameraShake> ShakeClass;
 
 private:
 	ACharacter* OwnerCharacter;
