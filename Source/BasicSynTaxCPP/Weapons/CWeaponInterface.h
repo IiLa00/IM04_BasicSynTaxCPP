@@ -5,6 +5,7 @@
 #include "CWeaponInterface.generated.h"
 
 class ACAR4;
+class UCBulletWidget;
 
 UINTERFACE(MinimalAPI)
 class UCWeaponInterface : public UInterface
@@ -22,4 +23,6 @@ public:
 
 	virtual void OnTarget() {};
 	virtual void OffTarget() {};
+
+	virtual UCBulletWidget* GetBulletWidget() = 0;
 };

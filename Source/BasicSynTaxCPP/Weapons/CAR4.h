@@ -6,6 +6,7 @@
 
 class UAnimMontage;
 class ACharacter;
+class UCBulletWidget;
 
 UCLASS()
 class BASICSYNTAXCPP_API ACAR4 : public AActor
@@ -39,6 +40,13 @@ public:
 	void Begin_Unequip();
 	void End_Unequip();
 
+	void Reload();
+	void Begin_Reload();
+	void End_Reload();
+
+	void Begin_Magazine();
+	void End_Magazine();
+
 public:
 	void OnFire();
 	void OffFire();
@@ -65,6 +73,9 @@ private:
 		UAnimMontage* UnequipMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Montages")
+		UAnimMontage* ReloadMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Montages")
 		float MontagesPlayRate;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Range")
@@ -73,6 +84,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "CameraShake")
 		TSubclassOf<UCameraShake> ShakeClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "CameraShake")
+		TSubclassOf<AActor> MagazineClass;
+
 private:
 	ACharacter* OwnerCharacter;
 
@@ -80,5 +94,6 @@ private:
 	bool bPlayingMontage;
 	bool bAiming;
 	bool bFiring;
+	bool bReloading;
 
 };

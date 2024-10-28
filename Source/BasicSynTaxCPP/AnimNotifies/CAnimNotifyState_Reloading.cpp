@@ -1,13 +1,13 @@
-#include "CAnimNotifyState_Equip.h"
+#include "CAnimNotifyState_Reloading.h"
 #include "Weapons/CWeaponInterface.h"
 #include "Weapons/CAR4.h"
 
-FString UCAnimNotifyState_Equip::GetNotifyName_Implementation() const
+FString UCAnimNotifyState_Reloading::GetNotifyName_Implementation() const
 {
-	return "Equip";
+	return "Reloading";
 }
 
-void UCAnimNotifyState_Equip::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
+void UCAnimNotifyState_Reloading::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration);
 
@@ -15,12 +15,12 @@ void UCAnimNotifyState_Equip::NotifyBegin(USkeletalMeshComponent* MeshComp, UAni
 	if (OwnerInterface)
 	{
 		ACAR4* AR4 = OwnerInterface->GetWeapon();
-		if(AR4)
-			AR4->Begin_Equip();
+		if (AR4)
+			AR4->Begin_Reload();
 	}
 }
 
-void UCAnimNotifyState_Equip::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UCAnimNotifyState_Reloading::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	Super::NotifyEnd(MeshComp, Animation);
 
@@ -29,6 +29,7 @@ void UCAnimNotifyState_Equip::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimS
 	{
 		ACAR4* AR4 = OwnerInterface->GetWeapon();
 		if (AR4)
-			AR4->End_Equip();
+			AR4->End_Reload();
 	}
+
 }

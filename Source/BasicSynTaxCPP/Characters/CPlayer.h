@@ -9,6 +9,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class ACAR4;
 class UCAimWidget;
+class UCBulletWidget;
 
 UCLASS()
 class BASICSYNTAXCPP_API ACPlayer : public ACharacter, public ICWeaponInterface
@@ -23,16 +24,19 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
-
+	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
 	FORCEINLINE ACAR4* GetWeapon() override { return AR4; }
 	FORCEINLINE void GetAimRay(FVector& OutAimStart, FVector& OutAimEnd, FVector& OutAimDirection) override;
 
+	FORCEINLINE UCBulletWidget* GetBulletWidget() override { return BulletWidget; }
+
 	void OnTarget() override;
 	void OffTarget() override;
 
+	
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 		void ZoomIn();
@@ -58,6 +62,8 @@ private:
 	void OnAim();
 	void OffAim();
 
+	void OnReload();
+
 public:
 	UFUNCTION(BlueprintCallable)
 		void SetBodyColor(FLinearColor InBodyColor, FLinearColor InLogoColor);
@@ -81,10 +87,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 		TSubclassOf<UCAimWidget> AimWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+		TSubclassOf<UUserWidget> BulletWidgetClass;
+
 private:
 	UMaterialInstanceDynamic* BodyMaterial;
 	UMaterialInstanceDynamic* LogoMaterial;
 
 	ACAR4* AR4;
+
 	UCAimWidget* AimWidget;
+	UCBulletWidget* BulletWidget;
 };

@@ -7,6 +7,7 @@
 #include "Weapons/CAR4.h"
 #include "Blueprint/UserWidget.h"
 #include "UI/CAimWidget.h"
+#include "UI/CBulletWidget.h"
 
 ACPlayer::ACPlayer()
 {
@@ -55,6 +56,7 @@ ACPlayer::ACPlayer()
 	GetCharacterMovement()->MaxWalkSpeed = 400.f;
 
 	CHelpers::GetClass(&AimWidgetClass, "/Game/UI/WB_Aim");
+	CHelpers::GetClass(&BulletWidgetClass, "/Game/UI/WB_Bullet");
 }
 
 void ACPlayer::BeginPlay()
@@ -74,6 +76,10 @@ void ACPlayer::BeginPlay()
 	AimWidget = CreateWidget<UCAimWidget>(GetController<APlayerController>(), AimWidgetClass);
 	AimWidget->AddToViewport();
 	AimWidget->SetVisibility(ESlateVisibility::Hidden);
+
+	BulletWidget = CreateWidget<UCBulletWidget>(GetController<APlayerController>(), BulletWidgetClass);
+	BulletWidget->AddToViewport();
+	BulletWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ACPlayer::Tick(float DeltaTime)
@@ -102,6 +108,8 @@ void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Pressed, this, &ACPlayer::OnAim);
 	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Released, this, &ACPlayer::OffAim);
+
+	PlayerInputComponent->BindAction("Reload", EInputEvent::IE_Pressed, this, &ACPlayer::OnReload);
 
 }
 
@@ -145,10 +153,13 @@ void ACPlayer::OnRifle()
 			OffAim();
 
 		AR4->Unequip();
+		BulletWidget->SetVisibility(ESlateVisibility::Hidden);
 		return;
 	}
 
 	AR4->Equip();
+
+	BulletWidget->SetVisibility(ESlateVisibility::Visible);
 
 }
 
@@ -196,6 +207,15 @@ void ACPlayer::OffAim()
 	ZoomOut();
 
 	AimWidget->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void ACPlayer::OnReload()
+{
+	OffAim();
+
+	AR4->OffFire();
+	
+	AR4->Reload();
 }
 
 void ACPlayer::SetBodyColor(FLinearColor InBodyColor, FLinearColor InLogoColor)
