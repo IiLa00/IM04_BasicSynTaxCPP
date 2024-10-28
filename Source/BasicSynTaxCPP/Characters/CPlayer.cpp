@@ -109,6 +109,8 @@ void ACPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Pressed, this, &ACPlayer::OnAim);
 	PlayerInputComponent->BindAction("Aim", EInputEvent::IE_Released, this, &ACPlayer::OffAim);
 
+	PlayerInputComponent->BindAction("AutoFire", EInputEvent::IE_Pressed, this, &ACPlayer::OnAutoFire);
+
 	PlayerInputComponent->BindAction("Reload", EInputEvent::IE_Pressed, this, &ACPlayer::OnReload);
 
 }
@@ -207,6 +209,13 @@ void ACPlayer::OffAim()
 	ZoomOut();
 
 	AimWidget->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void ACPlayer::OnAutoFire()
+{
+	if (AR4->IsFiring()) return;
+	
+	AR4->ToggleAutoFiring();
 }
 
 void ACPlayer::OnReload()

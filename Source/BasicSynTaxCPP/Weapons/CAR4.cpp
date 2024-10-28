@@ -1,10 +1,14 @@
 #include "CAR4.h"
 #include "GameFramework/Character.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/DecalComponent.h"
 #include "BasicSyntaxCPP.h"
 #include "DrawDebugHelpers.h"
 #include "CWeaponInterface.h"
 #include "UI/CBulletWidget.h"
+#include "CBullet.h"
+#include "Sound/SoundCue.h"
+#include "Particles/ParticleSystem.h"
 
 static TAutoConsoleVariable<bool> CVarDrawDebugLine(TEXT("IM.DrawDebug"), false, TEXT(" Visible AR4 Aim Line"),ECVF_Cheat);
 
@@ -22,17 +26,23 @@ ACAR4::ACAR4()
 	CHelpers::GetAsset(&UnequipMontage, "/Game/Character/Animations/AR4/Rifle_Ungrab_Montage");
 	CHelpers::GetAsset(&ReloadMontage, "/Game/Character/Animations/AR4/Rifle_Jog_Reload_Montage");
 
+	CHelpers::GetClass(&ShakeClass, "/Game/AR4/Shake_Fire");
+	CHelpers::GetClass(&BulletClass, "/Game/AR4/BP_CBullet");
+
+	CHelpers::GetAsset(&MuzzleEffect,"/Game/Particles_Rifle/Particles/VFX_Muzzleflash");
+	CHelpers::GetAsset(&EjectEffect, "/Game/Particles_Rifle/Particles/VFX_Eject_bullet");
+	CHelpers::GetAsset(&ImpactEffect, "/Game/Particles_Rifle/Particles/VFX_Impact_Default");
+	CHelpers::GetAsset(&FireSound, "/Game/Sounds/S_RifleShoot_Cue");
+	CHelpers::GetAsset(&DecalMaterial, "/Game/Materials/M_Decal");
+	
+	CHelpers::GetClass(&MagazineClass, "/Game/Magazine/BP_Magazine");
+
 	HolsterSocket = "holster_ar4";
 	HandSocket = "hand_ar4";
 
 	MontagesPlayRate = 1.75f;
 
 	ShootRange = 10000.f;
-
-	CHelpers::GetClass(&ShakeClass, "/Game/AR4/Shake_Fire");
-
-	CHelpers::GetClass(&MagazineClass, "/Game/Magazine/BP_Magazine");
-
 }
 
 void ACAR4::BeginPlay()
@@ -89,7 +99,12 @@ void ACAR4::Tick(float DeltaTime)
 	OwnerInterface->OffTarget();
 }
 
-void ACAR4::EnableAim() 
+void ACAR4::ToggleAutoFiring()
+{
+	bAutoFiring = !bAutoFiring;
+}
+
+void ACAR4::EnableAim()
 { 
 	bAiming = true; 
 }
@@ -220,6 +235,13 @@ void ACAR4::OnFire()
 
 	bFiring = true;
 
+	if (bAutoFiring)
+	{
+		GetWorld()->GetTimerManager().SetTimer(AutoFireTimer, this, &ACAR4::Firing_Internal, 0.1f, true, 0.f);
+		return;
+	}
+		
+
 	Firing_Internal();
 
 	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
@@ -233,10 +255,20 @@ void ACAR4::OnFire()
 void ACAR4::OffFire()
 {
 	bFiring = false;
+
+	if (bAutoFiring)
+		GetWorld()->GetTimerManager().ClearTimer(AutoFireTimer);
+	
 }
 
 void ACAR4::Firing_Internal()
 {
+	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
+	if (!OwnerInterface) return;
+
+	FVector Start, End, Direction;
+	OwnerInterface->GetAimRay(Start, End, Direction);
+
 	if (!OwnerCharacter) return;
 	APlayerController* PC = OwnerCharacter->GetController<APlayerController>();
 
@@ -244,12 +276,14 @@ void ACAR4::Firing_Internal()
 		PC->PlayerCameraManager->PlayCameraShake(ShakeClass);
 	
 
-	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
-	if (!OwnerInterface) return;
+	FVector MuzzleLocation = MeshComp->GetSocketLocation("b_gun_muzzleflash");
+	if (BulletClass)
+		GetWorld()->SpawnActor<ACBullet>(BulletClass, MuzzleLocation, Direction.Rotation());
 
-	FVector Start, End, Direction;
-	OwnerInterface->GetAimRay(Start, End, Direction);
-
+	UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, "MuzzleFlash");
+	UGameplayStatics::SpawnEmitterAttached(EjectEffect, MeshComp, "EjectBullet");
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, MuzzleLocation);
+	
 	FHitResult Hit;
 
 	FCollisionQueryParams QueryParams;
@@ -265,6 +299,13 @@ void ACAR4::Firing_Internal()
 		QueryParams
 	))
 	{
+		FRotator ImpactRotation = Hit.ImpactNormal.Rotation();
+
+		UDecalComponent* DecalComp = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalMaterial, FVector(5), Hit.ImpactPoint, ImpactRotation, 3.f);
+		DecalComp->SetFadeScreenSize(0);
+
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.ImpactPoint, ImpactRotation);
+
 		UPrimitiveComponent* HitComp = Hit.GetComponent();
 		if (Hit.GetComponent()->IsSimulatingPhysics())
 		{

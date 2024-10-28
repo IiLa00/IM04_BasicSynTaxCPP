@@ -62,6 +62,8 @@ private:
 	void OnAim();
 	void OffAim();
 
+	void OnAutoFire();
+
 	void OnReload();
 
 public:
