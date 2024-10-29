@@ -7,6 +7,7 @@
 #include "CWeaponInterface.h"
 #include "UI/CBulletWidget.h"
 #include "CBullet.h"
+#include "CMagazine.h"
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
 
@@ -29,20 +30,22 @@ ACAR4::ACAR4()
 	CHelpers::GetClass(&ShakeClass, "/Game/AR4/Shake_Fire");
 	CHelpers::GetClass(&BulletClass, "/Game/AR4/BP_CBullet");
 
+	CHelpers::GetClass(&MagazineClass, "/Game/Magazine/BP_Magazine");
+
 	CHelpers::GetAsset(&MuzzleEffect,"/Game/Particles_Rifle/Particles/VFX_Muzzleflash");
 	CHelpers::GetAsset(&EjectEffect, "/Game/Particles_Rifle/Particles/VFX_Eject_bullet");
 	CHelpers::GetAsset(&ImpactEffect, "/Game/Particles_Rifle/Particles/VFX_Impact_Default");
 	CHelpers::GetAsset(&FireSound, "/Game/Sounds/S_RifleShoot_Cue");
 	CHelpers::GetAsset(&DecalMaterial, "/Game/Materials/M_Decal");
 	
-	CHelpers::GetClass(&MagazineClass, "/Game/Magazine/BP_Magazine");
-
 	HolsterSocket = "holster_ar4";
 	HandSocket = "hand_ar4";
 
 	MontagesPlayRate = 1.75f;
 
 	ShootRange = 10000.f;
+
+	PitchSpeed = 0.25f;
 }
 
 void ACAR4::BeginPlay()
@@ -135,8 +138,8 @@ void ACAR4::Begin_Equip()
 
 	if (!OwnerInterface) return;
 
-	UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
-	BulletWidget->SetVisibility(ESlateVisibility::Visible);
+	//UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
+	//BulletWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void ACAR4::End_Equip()
@@ -164,8 +167,8 @@ void ACAR4::Begin_Unequip()
 
 	if (!OwnerInterface) return;
 
-	UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
-	BulletWidget->SetVisibility(ESlateVisibility::Hidden);
+	//UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
+	//BulletWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ACAR4::End_Unequip()
@@ -181,26 +184,16 @@ void ACAR4::Reload()
 
 	bPlayingMontage = true;
 
-	OwnerCharacter->PlayAnimMontage(ReloadMontage, MontagesPlayRate);
-
-	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
-
-	if (!OwnerInterface) return;
-
-	UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
-	BulletWidget->Reload();
+	OwnerCharacter->PlayAnimMontage(ReloadMontage, 1.f);
 }
 
 void ACAR4::Begin_Reload()
 {
-	// 재장전상태 돌입
-	
 	bReloading = true;
 }
 
 void ACAR4::End_Reload()
 {
-	// 재장전 상태 끝, 막은 것(줌인, 1번) 풀기
 
 	bReloading = false;
 	bPlayingMontage = false;
@@ -208,21 +201,45 @@ void ACAR4::End_Reload()
 
 void ACAR4::Begin_Magazine()
 {
-	//  장탄 수 초기화?, 기존 탄창 떨어트리고 숨기기
+	// 기존 탄창 떨어트리고 숨기기
 
 	GetMesh()->HideBoneByName("b_gun_mag", EPhysBodyOp::PBO_None);
 
-	FTransform HandTF = GetMesh()->GetSocketTransform("hand_r");
-	AActor* Magazine = GetWorld()->SpawnActor<AActor>(MagazineClass, HandTF);
+	FTransform Tf = GetMesh()->GetSocketTransform("b_gun_mag");
+	ACMagazine* Magazine = GetWorld()->SpawnActor<ACMagazine>(MagazineClass, Tf);
 
 	if (!Magazine) return;
 
+	Magazine->MeshComp->SetSimulatePhysics(true);
+	Magazine->SetLifeSpan(1.f);
+	
 }
 
 void ACAR4::End_Magazine()
 {
-	// 스폰된 탄창 삭제 / 기존 탄창 숨기기 풀기 / 총알 수 늘리기
+	GetMesh()->UnHideBoneByName("b_gun_mag");
 
+	if (Hand_Magazine)
+	{
+		Hand_Magazine->DetachAllSceneComponents(OwnerCharacter->GetMesh(), FDetachmentTransformRules::KeepRelativeTransform);
+		Hand_Magazine->Destroy();
+	}
+		
+	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
+
+	if (!OwnerInterface) return;
+	// keep
+	UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
+	BulletWidget->Reload();
+}
+
+void ACAR4::Spawn_Magazine()
+{
+	Hand_Magazine = GetWorld()->SpawnActor<ACMagazine>(MagazineClass);
+
+	if (!Hand_Magazine) return;
+
+	Hand_Magazine->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "ring_01_l");
 }
 
 void ACAR4::OnFire()
@@ -235,21 +252,15 @@ void ACAR4::OnFire()
 
 	bFiring = true;
 
+	CurrentPitch = 0.f;
+
 	if (bAutoFiring)
 	{
 		GetWorld()->GetTimerManager().SetTimer(AutoFireTimer, this, &ACAR4::Firing_Internal, 0.1f, true, 0.f);
 		return;
 	}
 		
-
 	Firing_Internal();
-
-	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
-
-	if (!OwnerInterface) return;
-
-	UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
-	BulletWidget->Shooting();
 }
 
 void ACAR4::OffFire()
@@ -265,6 +276,15 @@ void ACAR4::Firing_Internal()
 {
 	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
 	if (!OwnerInterface) return;
+
+	UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
+
+	if (!(BulletWidget->IsShoot()))
+	{
+		Reload();
+		return;
+	}
+	BulletWidget->Shooting();
 
 	FVector Start, End, Direction;
 	OwnerInterface->GetAimRay(Start, End, Direction);
@@ -283,7 +303,16 @@ void ACAR4::Firing_Internal()
 	UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, "MuzzleFlash");
 	UGameplayStatics::SpawnEmitterAttached(EjectEffect, MeshComp, "EjectBullet");
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, MuzzleLocation);
+
+	CurrentPitch -= PitchSpeed * GetWorld()->GetDeltaSeconds();
+
+	if (CurrentPitch > -CurrentPitch)
+	{
+		OwnerCharacter->AddControllerPitchInput(CurrentPitch);
+		CLog::Print(CurrentPitch, 1);
+	}
 	
+
 	FHitResult Hit;
 
 	FCollisionQueryParams QueryParams;
@@ -315,5 +344,7 @@ void ACAR4::Firing_Internal()
 			HitComp->AddImpulseAtLocation(Direction * 3000.f, OwnerCharacter->GetActorLocation());
 		}
 	}
+
+	
 }
 

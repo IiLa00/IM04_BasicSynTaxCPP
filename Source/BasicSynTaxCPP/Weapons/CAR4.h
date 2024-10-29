@@ -8,8 +8,10 @@ class UAnimMontage;
 class ACharacter;
 class UCBulletWidget;
 class ACBullet;
+class ACMagazine;
 class UParticleSystem;
 class USoundCue;
+
 
 UCLASS()
 class BASICSYNTAXCPP_API ACAR4 : public AActor
@@ -53,6 +55,8 @@ public:
 
 	void Begin_Magazine();
 	void End_Magazine();
+
+	void Spawn_Magazine();
 
 public:
 	void OnFire();
@@ -108,12 +112,16 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effect")
 		UMaterial* DecalMaterial;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category = "Effect")
+		float PitchSpeed;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Magazine")
-		TSubclassOf<AActor> MagazineClass;
+		TSubclassOf<ACMagazine> MagazineClass;
 
 private:
 	ACharacter* OwnerCharacter;
+	ACMagazine* Hand_Magazine;
 
 	bool bEquipped;
 	bool bPlayingMontage;
@@ -123,5 +131,7 @@ private:
 	bool bReloading;
 
 	FTimerHandle AutoFireTimer;
+
+	float CurrentPitch;
 
 };

@@ -9,6 +9,6 @@ public class BasicSynTaxCPP : ModuleRules
 
 		PrivateIncludePaths.Add(ModuleDirectory);
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "SlateCore" });
 	}
 }

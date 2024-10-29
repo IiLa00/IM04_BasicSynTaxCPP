@@ -7,6 +7,7 @@
 #include "Weapons/CAR4.h"
 #include "Blueprint/UserWidget.h"
 #include "UI/CAimWidget.h"
+#include "UI/CGameInfoWidget.h"
 #include "UI/CBulletWidget.h"
 
 ACPlayer::ACPlayer()
@@ -56,6 +57,7 @@ ACPlayer::ACPlayer()
 	GetCharacterMovement()->MaxWalkSpeed = 400.f;
 
 	CHelpers::GetClass(&AimWidgetClass, "/Game/UI/WB_Aim");
+	CHelpers::GetClass(&GameInfoWidgetClass, "/Game/UI/WB_GameInfo");
 	CHelpers::GetClass(&BulletWidgetClass, "/Game/UI/WB_Bullet");
 }
 
@@ -76,15 +78,23 @@ void ACPlayer::BeginPlay()
 	AimWidget = CreateWidget<UCAimWidget>(GetController<APlayerController>(), AimWidgetClass);
 	AimWidget->AddToViewport();
 	AimWidget->SetVisibility(ESlateVisibility::Hidden);
+	
 
+	GameInfoWidget = CreateWidget<UCGameInfoWidget>(GetController<APlayerController>(), GameInfoWidgetClass);
+	GameInfoWidget->AddToViewport();
+	
 	BulletWidget = CreateWidget<UCBulletWidget>(GetController<APlayerController>(), BulletWidgetClass);
 	BulletWidget->AddToViewport();
 	BulletWidget->SetVisibility(ESlateVisibility::Hidden);
+	
 }
 
 void ACPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (!(GetBulletWidget()->IsShoot()))
+		OnReload();
 
 }
 
@@ -155,13 +165,14 @@ void ACPlayer::OnRifle()
 			OffAim();
 
 		AR4->Unequip();
-		BulletWidget->SetVisibility(ESlateVisibility::Hidden);
+
+		GetBulletWidget()->SetVisibility(ESlateVisibility::Hidden);
 		return;
 	}
 
 	AR4->Equip();
 
-	BulletWidget->SetVisibility(ESlateVisibility::Visible);
+	GetBulletWidget()->SetVisibility(ESlateVisibility::Visible);
 
 }
 
@@ -190,7 +201,8 @@ void ACPlayer::OnAim()
 
 	ZoomIn();
 
-	AimWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if(AimWidget)
+		AimWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 }
 
 void ACPlayer::OffAim()
@@ -208,7 +220,8 @@ void ACPlayer::OffAim()
 
 	ZoomOut();
 
-	AimWidget->SetVisibility(ESlateVisibility::Hidden);
+	if (AimWidget)
+		AimWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ACPlayer::OnAutoFire()
@@ -216,6 +229,8 @@ void ACPlayer::OnAutoFire()
 	if (AR4->IsFiring()) return;
 	
 	AR4->ToggleAutoFiring();
+
+	AR4->IsAutoFiring() ? GameInfoWidget->EnableAutoFire() : GameInfoWidget->DisableAutoFire();
 }
 
 void ACPlayer::OnReload()

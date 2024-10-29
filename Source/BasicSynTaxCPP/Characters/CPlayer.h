@@ -9,6 +9,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class ACAR4;
 class UCAimWidget;
+class UCGameInfoWidget;
 class UCBulletWidget;
 
 UCLASS()
@@ -90,6 +91,9 @@ protected:
 		TSubclassOf<UCAimWidget> AimWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+		TSubclassOf<UCGameInfoWidget> GameInfoWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 		TSubclassOf<UUserWidget> BulletWidgetClass;
 
 private:
@@ -100,4 +104,5 @@ private:
 
 	UCAimWidget* AimWidget;
 	UCBulletWidget* BulletWidget;
+	UCGameInfoWidget* GameInfoWidget;
 };
