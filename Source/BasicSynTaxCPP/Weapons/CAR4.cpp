@@ -1,5 +1,6 @@
 #include "CAR4.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/DecalComponent.h"
 #include "BasicSyntaxCPP.h"
@@ -138,12 +139,18 @@ void ACAR4::Begin_Equip()
 void ACAR4::End_Equip()
 {
 	bPlayingMontage = false;
+
+	OwnerCharacter->bUseControllerRotationYaw = true;
+	OwnerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 void ACAR4::Unequip()
 {
 	if (!bEquipped) return;
 	if (bPlayingMontage) return;
+
+	if(bAutoFiring)
+		OffFire();
 
 	bPlayingMontage = true;
 
@@ -155,6 +162,9 @@ void ACAR4::Begin_Unequip()
 	bEquipped = false;
 
 	AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules(EAttachmentRule::KeepRelative, true), HolsterSocket);
+
+	OwnerCharacter->bUseControllerRotationYaw = false;
+	OwnerCharacter->GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 void ACAR4::End_Unequip()
@@ -230,7 +240,7 @@ void ACAR4::OnFire()
 {
 	if (!bEquipped) return;
 	if (bPlayingMontage) return;
-	if (!bAiming) return;
+	//if (!bAiming) return;
 	if (bFiring) return;
 	if (bReloading) return;
 
