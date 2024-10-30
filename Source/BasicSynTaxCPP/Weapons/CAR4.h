@@ -6,7 +6,6 @@
 
 class UAnimMontage;
 class ACharacter;
-class UCBulletWidget;
 class ACBullet;
 class ACMagazine;
 class UParticleSystem;
