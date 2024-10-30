@@ -19,7 +19,6 @@ void UCAnimNotifyState_Magazine::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 			AR4->Begin_Magazine();
 	}
 
-	
 }
 
 void UCAnimNotifyState_Magazine::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)

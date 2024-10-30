@@ -79,7 +79,6 @@ void ACPlayer::BeginPlay()
 	AimWidget->AddToViewport();
 	AimWidget->SetVisibility(ESlateVisibility::Hidden);
 	
-
 	GameInfoWidget = CreateWidget<UCGameInfoWidget>(GetController<APlayerController>(), GameInfoWidgetClass);
 	GameInfoWidget->AddToViewport();
 	

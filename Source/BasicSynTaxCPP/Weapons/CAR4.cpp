@@ -133,13 +133,6 @@ void ACAR4::Begin_Equip()
 	bEquipped = true;
 
 	AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules(EAttachmentRule::KeepRelative, true), HandSocket);
-
-	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
-
-	if (!OwnerInterface) return;
-
-	//UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
-	//BulletWidget->SetVisibility(ESlateVisibility::Visible);
 }
 
 void ACAR4::End_Equip()
@@ -162,13 +155,6 @@ void ACAR4::Begin_Unequip()
 	bEquipped = false;
 
 	AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules(EAttachmentRule::KeepRelative, true), HolsterSocket);
-
-	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
-
-	if (!OwnerInterface) return;
-
-	//UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
-	//BulletWidget->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void ACAR4::End_Unequip()
@@ -201,8 +187,6 @@ void ACAR4::End_Reload()
 
 void ACAR4::Begin_Magazine()
 {
-	// ±âÁ¸ ÅºÃ¢ ¶³¾îÆ®¸®°í ¼û±â±â
-
 	GetMesh()->HideBoneByName("b_gun_mag", EPhysBodyOp::PBO_None);
 
 	FTransform Tf = GetMesh()->GetSocketTransform("b_gun_mag");
@@ -228,9 +212,8 @@ void ACAR4::End_Magazine()
 	ICWeaponInterface* OwnerInterface = Cast<ICWeaponInterface>(OwnerCharacter);
 
 	if (!OwnerInterface) return;
-	// keep
-	UCBulletWidget* BulletWidget = OwnerInterface->GetBulletWidget();
-	BulletWidget->Reload();
+
+	OwnerInterface->GetBulletWidget()->Reload();
 }
 
 void ACAR4::Spawn_Magazine()
@@ -239,6 +222,7 @@ void ACAR4::Spawn_Magazine()
 
 	if (!Hand_Magazine) return;
 
+	Hand_Magazine->SetActorEnableCollision(false);
 	Hand_Magazine->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "ring_01_l");
 }
 
@@ -269,7 +253,6 @@ void ACAR4::OffFire()
 
 	if (bAutoFiring)
 		GetWorld()->GetTimerManager().ClearTimer(AutoFireTimer);
-	
 }
 
 void ACAR4::Firing_Internal()
@@ -295,7 +278,6 @@ void ACAR4::Firing_Internal()
 	if (PC)
 		PC->PlayerCameraManager->PlayCameraShake(ShakeClass);
 	
-
 	FVector MuzzleLocation = MeshComp->GetSocketLocation("b_gun_muzzleflash");
 	if (BulletClass)
 		GetWorld()->SpawnActor<ACBullet>(BulletClass, MuzzleLocation, Direction.Rotation());
@@ -307,12 +289,9 @@ void ACAR4::Firing_Internal()
 	CurrentPitch -= PitchSpeed * GetWorld()->GetDeltaSeconds();
 
 	if (CurrentPitch > -CurrentPitch)
-	{
 		OwnerCharacter->AddControllerPitchInput(CurrentPitch);
-		CLog::Print(CurrentPitch, 1);
-	}
 	
-
+	
 	FHitResult Hit;
 
 	FCollisionQueryParams QueryParams;
